@@ -345,3 +345,39 @@ ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS refresh_token_expires_at TIMESTA
 ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
 ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS reset_token_expires_at TIMESTAMPTZ;
 
+-- 10. Company Master Table
+CREATE TABLE IF NOT EXISTS "tblCompanyMaster" (
+    "companyId" SERIAL PRIMARY KEY,
+    "companyName" VARCHAR(255) NOT NULL,
+    "pan" VARCHAR(50),
+    "gstin" VARCHAR(50),
+    "email" VARCHAR(255),
+    "phone" VARCHAR(50),
+    "website" VARCHAR(255),
+    "isActive" BOOLEAN DEFAULT TRUE NOT NULL,
+    "createdAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 11. Branch Master Table
+CREATE TABLE IF NOT EXISTS "tblBranchMaster" (
+    "branchId" SERIAL PRIMARY KEY,
+    "companyId" INTEGER REFERENCES "tblCompanyMaster"("companyId") ON DELETE CASCADE NOT NULL,
+    "branchName" VARCHAR(255) NOT NULL,
+    "addressLine1" VARCHAR(255),
+    "addressLine2" VARCHAR(255),
+    "city" VARCHAR(100),
+    "state" VARCHAR(100),
+    "country" VARCHAR(100),
+    "pincode" VARCHAR(50),
+    "email" VARCHAR(255),
+    "phone" VARCHAR(50),
+    "isDefault" BOOLEAN DEFAULT FALSE NOT NULL,
+    "isActive" BOOLEAN DEFAULT TRUE NOT NULL,
+    "createdAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Migrations for tblQuotations to include company and branch
+ALTER TABLE "tblQuotations" ADD COLUMN IF NOT EXISTS "companyId" INTEGER;
+ALTER TABLE "tblQuotations" ADD COLUMN IF NOT EXISTS "branchId" INTEGER;

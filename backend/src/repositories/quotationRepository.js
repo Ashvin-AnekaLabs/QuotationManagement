@@ -8,6 +8,10 @@ const formatQuotation = (q) => {
     ...q,
     wizard_step: parseInt(q.wizard_step || 1, 10),
     total_effort_hours: parseFloat(q.total_effort_hours || 0),
+    companyId: q.companyId ? parseInt(q.companyId, 10) : null,
+    branchId: q.branchId ? parseInt(q.branchId, 10) : null,
+    companyName: q.companyName || null,
+    branchName: q.branchName || null,
     productivity_basis: parseFloat(q.productivity_basis || 8.00),
     average_productivity: parseFloat(q.average_productivity || 8.00),
     estimation_effort_cost: parseFloat(q.estimation_effort_cost || 0),
@@ -100,6 +104,8 @@ class QuotationRepository extends BaseRepository {
       engagement_type = 'Fixed Price',
       pricing_currency = 'INR',
       exchange_rate = 1.0000,
+      companyId,
+      branchId,
     } = data;
 
     const sql = `
@@ -107,9 +113,9 @@ class QuotationRepository extends BaseRepository {
         quotation_number, client_id, title, description, logo, billing_address, shipping_address, pincode, wizard_step,
         opportunity_name, proposal_date, valid_till, revision_version, prepared_by_id,
         prepared_by_designation, prepared_by_department, project_summary,
-        engagement_type, pricing_currency, exchange_rate
+        engagement_type, pricing_currency, exchange_rate, "companyId", "branchId"
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
       RETURNING *;
     `;
     const result = await this.query(
@@ -135,6 +141,8 @@ class QuotationRepository extends BaseRepository {
         engagement_type,
         pricing_currency,
         exchange_rate,
+        companyId ? parseInt(companyId, 10) : null,
+        branchId ? parseInt(branchId, 10) : null,
       ],
       client
     );
@@ -155,10 +163,14 @@ class QuotationRepository extends BaseRepository {
 
     const sql = `
       SELECT q.*, c.name AS client_name, c.company_name AS client_company, c.email AS client_email,
-             e.name AS prepared_by_name
+             e.name AS prepared_by_name,
+             comp."companyName", comp.pan AS company_pan, comp.gstin AS company_gstin, comp.email AS company_email, comp.phone AS company_phone, comp.website AS company_website,
+             br."branchName", br."addressLine1" AS branch_address1, br."addressLine2" AS branch_address2, br.city AS branch_city, br.state AS branch_state, br.country AS branch_country, br.pincode AS branch_pincode, br.email AS branch_email, br.phone AS branch_phone
       FROM "tblQuotations" q
       LEFT JOIN "tblClients" c ON q.client_id = c.id
       LEFT JOIN "tblEmployees" e ON q.prepared_by_id = e.id
+      LEFT JOIN "tblCompanyMaster" comp ON q."companyId" = comp."companyId"
+      LEFT JOIN "tblBranchMaster" br ON q."branchId" = br."branchId"
       ${whereString}
       ORDER BY q.id DESC
       LIMIT $${paramIdx++} OFFSET $${paramIdx++};
@@ -189,10 +201,14 @@ class QuotationRepository extends BaseRepository {
              c.contact_person AS client_contact_person, c.phone AS client_phone, c.address AS client_address,
              c.website AS client_website, c.gst_number AS client_gst_number, c.pan_number AS client_pan_number,
              c.currency AS client_currency, c.country AS client_country, c.state AS client_state, c.city AS client_city,
-             e.name AS prepared_by_name
+             e.name AS prepared_by_name,
+             comp."companyName", comp.pan AS company_pan, comp.gstin AS company_gstin, comp.email AS company_email, comp.phone AS company_phone, comp.website AS company_website,
+             br."branchName", br."addressLine1" AS branch_address1, br."addressLine2" AS branch_address2, br.city AS branch_city, br.state AS branch_state, br.country AS branch_country, br.pincode AS branch_pincode, br.email AS branch_email, br.phone AS branch_phone
       FROM "tblQuotations" q
       LEFT JOIN "tblClients" c ON q.client_id = c.id
       LEFT JOIN "tblEmployees" e ON q.prepared_by_id = e.id
+      LEFT JOIN "tblCompanyMaster" comp ON q."companyId" = comp."companyId"
+      LEFT JOIN "tblBranchMaster" br ON q."branchId" = br."branchId"
       WHERE q.id = $1;
     `;
     const result = await this.query(sql, [id], client);
@@ -204,6 +220,7 @@ class QuotationRepository extends BaseRepository {
       'client_id', 'title', 'description', 'logo', 'billing_address', 'shipping_address', 'pincode', 'wizard_step', 'opportunity_name',
       'proposal_date', 'valid_till', 'revision_version', 'prepared_by_id', 'prepared_by_designation',
       'prepared_by_department', 'project_summary', 'engagement_type', 'pricing_currency', 'exchange_rate',
+      'companyId', 'branchId',
       'total_effort_hours', 'productivity_basis', 'average_productivity', 'estimation_effort_cost',
       'estimation_contingency_percentage', 'estimation_contingency_amount', 'estimation_subtotal',
       'estimation_profit_margin_percentage', 'estimation_profit_margin_amount', 'estimated_project_cost',
@@ -222,7 +239,7 @@ class QuotationRepository extends BaseRepository {
 
     Object.keys(fields).forEach((key) => {
       if (allowedFields.includes(key) && fields[key] !== undefined) {
-        setClauses.push(`${key} = $${paramIdx++}`);
+        setClauses.push(`"${key}" = $${paramIdx++}`);
         params.push(fields[key]);
       }
     });
@@ -548,6 +565,25 @@ class QuotationRepository extends BaseRepository {
         country: quotation.client_country,
         state: quotation.client_state,
         city: quotation.client_city,
+      },
+      company: {
+        companyId: quotation.companyId,
+        companyName: quotation.companyName,
+        pan: quotation.company_pan,
+        gstin: quotation.company_gstin,
+        email: quotation.company_email,
+        phone: quotation.company_phone,
+        website: quotation.company_website,
+        branchId: quotation.branchId,
+        branchName: quotation.branchName,
+        branchAddress1: quotation.branch_address1,
+        branchAddress2: quotation.branch_address2,
+        branchCity: quotation.branch_city,
+        branchState: quotation.branch_state,
+        branchCountry: quotation.branch_country,
+        branchPincode: quotation.branch_pincode,
+        branchEmail: quotation.branch_email,
+        branchPhone: quotation.branch_phone,
       },
       scopes: Array.from(scopesMap.values()),
       team: teamRes.rows.map((t) => ({

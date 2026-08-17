@@ -7,6 +7,14 @@ const createQuotationValidator = [
     .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Client ID must be a positive integer'),
+  body('companyId')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('Company ID must be a positive integer'),
+  body('branchId')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('Branch ID must be a positive integer'),
   body('title')
     .optional({ nullable: true })
     .trim()
@@ -28,7 +36,7 @@ const createQuotationValidator = [
     .optional({ nullable: true })
     .trim(),
   body('wizard_step')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1, max: 8 }),
   body('opportunity_name')
     .optional({ nullable: true })
@@ -68,11 +76,19 @@ const updateQuotationValidator = [
     .isInt({ min: 1 })
     .withMessage('Valid Quotation ID is required'),
   body('client_id')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Client ID must be a positive integer'),
+  body('companyId')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('Company ID must be a positive integer'),
+  body('branchId')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('Branch ID must be a positive integer'),
   body('title')
-    .optional()
+    .optional({ nullable: true })
     .trim()
     .isLength({ max: 255 }),
   body('description')
@@ -91,7 +107,7 @@ const updateQuotationValidator = [
     .optional({ nullable: true })
     .trim(),
   body('wizard_step')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1, max: 8 }),
   body('opportunity_name')
     .optional({ nullable: true })

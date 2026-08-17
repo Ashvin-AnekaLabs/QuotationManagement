@@ -10,6 +10,8 @@ const functionalityRoutes = require('./functionalityRoutes');
 const milestoneRoutes = require('./milestoneRoutes');
 const reportRoutes = require('./reportRoutes');
 const authRoutes = require('./authRoutes');
+const companyRoutes = require('./companyRoutes');
+const branchRoutes = require('./branchRoutes');
 
 // Mount Resource Routers
 router.use('/auth', authRoutes);
@@ -21,6 +23,8 @@ router.use('/scopes', scopeRoutes);
 router.use('/functionalities', functionalityRoutes);
 router.use('/milestones', milestoneRoutes);
 router.use('/reports', reportRoutes);
+router.use('/companies', companyRoutes);
+router.use('/branches', branchRoutes);
 
 module.exports = router;
 
