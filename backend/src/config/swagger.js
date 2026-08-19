@@ -913,6 +913,34 @@ const swaggerDefinition = {
         responses: { 201: { description: 'Employee created' } },
       },
     },
+    '/api/v1/employees/roles': {
+      get: {
+        tags: ['Employees'],
+        summary: 'Get all unique employee roles',
+        responses: { 
+          200: { 
+            description: 'Employee roles fetched successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    statusCode: { type: 'integer', example: 200 },
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'Employee roles fetched successfully' },
+                    data: { 
+                      type: 'array', 
+                      items: { type: 'string' },
+                      example: ["Administrator", "Backend Developer", "Database Admin"]
+                    }
+                  }
+                }
+              }
+            }
+          } 
+        },
+      },
+    },
     '/api/v1/employees/{id}': {
       get: {
         tags: ['Employees'],

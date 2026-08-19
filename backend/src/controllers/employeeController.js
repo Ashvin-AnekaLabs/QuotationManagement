@@ -43,9 +43,17 @@ const deleteEmployee = asyncWrapper(async (req, res) => {
     .json(new ApiResponse(HTTP_STATUS.OK, employee, 'Employee deleted successfully'));
 });
 
+const getRoles = asyncWrapper(async (req, res) => {
+  const roles = await employeeService.getDistinctRoles();
+  res
+    .status(HTTP_STATUS.OK)
+    .json(new ApiResponse(HTTP_STATUS.OK, roles, 'Employee roles fetched successfully'));
+});
+
 module.exports = {
   createEmployee,
   getEmployee,
   updateEmployee,
   deleteEmployee,
+  getRoles,
 };

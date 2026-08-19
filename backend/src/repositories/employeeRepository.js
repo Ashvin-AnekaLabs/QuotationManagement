@@ -91,6 +91,17 @@ class EmployeeRepository extends BaseRepository {
     const result = await this.query(sql, [id], client);
     return formatEmployee(result.rows[0]);
   }
+
+  async getDistinctRoles(client = null) {
+    const sql = `
+      SELECT DISTINCT TRIM(role) AS role
+      FROM "tblEmployees"
+      WHERE role IS NOT NULL AND TRIM(role) <> ''
+      ORDER BY role ASC;
+    `;
+    const result = await this.query(sql, [], client);
+    return result.rows.map((r) => r.role);
+  }
 }
 
 module.exports = new EmployeeRepository();

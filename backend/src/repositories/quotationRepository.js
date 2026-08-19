@@ -104,6 +104,7 @@ class QuotationRepository extends BaseRepository {
       engagement_type = 'Fixed Price',
       pricing_currency = 'INR',
       exchange_rate = 1.0000,
+      sector,
       companyId,
       branchId,
     } = data;
@@ -112,10 +113,10 @@ class QuotationRepository extends BaseRepository {
       INSERT INTO "tblQuotations" (
         quotation_number, client_id, title, description, logo, billing_address, shipping_address, pincode, wizard_step,
         opportunity_name, proposal_date, valid_till, revision_version, prepared_by_id,
-        prepared_by_designation, prepared_by_department, project_summary,
+        prepared_by_designation, prepared_by_department, project_summary, sector,
         engagement_type, pricing_currency, exchange_rate, "companyId", "branchId"
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
       RETURNING *;
     `;
     const result = await this.query(
@@ -138,6 +139,7 @@ class QuotationRepository extends BaseRepository {
         prepared_by_designation || null,
         prepared_by_department || null,
         project_summary || description || null,
+        sector || null,
         engagement_type,
         pricing_currency,
         exchange_rate,
@@ -219,7 +221,7 @@ class QuotationRepository extends BaseRepository {
     const allowedFields = [
       'client_id', 'title', 'description', 'logo', 'billing_address', 'shipping_address', 'pincode', 'wizard_step', 'opportunity_name',
       'proposal_date', 'valid_till', 'revision_version', 'prepared_by_id', 'prepared_by_designation',
-      'prepared_by_department', 'project_summary', 'engagement_type', 'pricing_currency', 'exchange_rate',
+      'prepared_by_department', 'project_summary', 'sector', 'engagement_type', 'pricing_currency', 'exchange_rate',
       'companyId', 'branchId',
       'total_effort_hours', 'productivity_basis', 'average_productivity', 'estimation_effort_cost',
       'estimation_contingency_percentage', 'estimation_contingency_amount', 'estimation_subtotal',

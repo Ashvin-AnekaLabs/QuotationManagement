@@ -22,7 +22,6 @@ const errorHandler = (err, req, res, next) => {
     ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
   };
 
-  console.error('API Error:', JSON.stringify(response, null, 2));
   res.status(error.statusCode).json(response);
 };
 

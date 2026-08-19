@@ -113,6 +113,10 @@ class EmployeeService {
     await this.getEmployeeById(id);
     return await employeeRepository.delete(id);
   }
+
+  async getDistinctRoles() {
+    return await employeeRepository.getDistinctRoles();
+  }
 }
 
 module.exports = new EmployeeService();
