@@ -151,7 +151,7 @@ class QuotationRepository extends BaseRepository {
     return formatQuotation(result.rows[0]);
   }
 
-  async findAll({ limit = 50, offset = 0, client_id } = {}, client = null) {
+  async findAll({ limit = 50, offset = 0, client_id, startDate, endDate } = {}, client = null) {
     let whereClauses = [];
     let params = [];
     let paramIdx = 1;
@@ -159,6 +159,16 @@ class QuotationRepository extends BaseRepository {
     if (client_id) {
       whereClauses.push(`q.client_id = $${paramIdx++}`);
       params.push(client_id);
+    }
+
+    if (startDate) {
+      whereClauses.push(`DATE(q.created_at) >= $${paramIdx++}`);
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      whereClauses.push(`DATE(q.created_at) <= $${paramIdx++}`);
+      params.push(endDate);
     }
 
     const whereString = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
@@ -202,7 +212,7 @@ class QuotationRepository extends BaseRepository {
       SELECT q.*, c.name AS client_name, c.email AS client_email, c.company_name AS client_company,
              c.contact_person AS client_contact_person, c.phone AS client_phone, c.address AS client_address,
              c.website AS client_website, c.gst_number AS client_gst_number, c.pan_number AS client_pan_number,
-             c.currency AS client_currency, c.country AS client_country, c.state AS client_state, c.city AS client_city,
+             c.currency AS client_currency, c.country AS client_country, c.state AS client_state, c.city AS client_city, c.district AS client_district,
              e.name AS prepared_by_name,
              comp."companyName", comp.pan AS company_pan, comp.gstin AS company_gstin, comp.email AS company_email, comp.phone AS company_phone, comp.website AS company_website,
              br."branchName", br."addressLine1" AS branch_address1, br."addressLine2" AS branch_address2, br.city AS branch_city, br.state AS branch_state, br.country AS branch_country, br.pincode AS branch_pincode, br.email AS branch_email, br.phone AS branch_phone
@@ -567,6 +577,7 @@ class QuotationRepository extends BaseRepository {
         country: quotation.client_country,
         state: quotation.client_state,
         city: quotation.client_city,
+        district: quotation.client_district,
       },
       company: {
         companyId: quotation.companyId,

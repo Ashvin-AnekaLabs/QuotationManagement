@@ -48,6 +48,7 @@ const swaggerDefinition = {
           country: { type: 'string', example: 'India' },
           state: { type: 'string', example: 'Uttar Pradesh' },
           city: { type: 'string', example: 'Noida' },
+          district: { type: 'string', example: 'Noida' },
           status: { type: 'string', example: 'ACTIVE' },
         },
       },
@@ -68,6 +69,7 @@ const swaggerDefinition = {
           country: { type: 'string', example: 'India' },
           state: { type: 'string', example: 'Uttar Pradesh' },
           city: { type: 'string', example: 'Noida' },
+          district: { type: 'string', example: 'Noida' },
           status: { type: 'string', example: 'ACTIVE' },
           created_at: { type: 'string', format: 'date-time' },
           updated_at: { type: 'string', format: 'date-time' },
@@ -980,7 +982,11 @@ const swaggerDefinition = {
       get: {
         tags: ['Quotations'],
         summary: 'Get quotation(s) - Pass id = 0 to fetch all, or id > 0 for specific quotation',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' }, description: '0 to fetch all, or ID > 0 for specific quotation' }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' }, description: '0 to fetch all, or ID > 0 for specific quotation' },
+          { name: 'startDate', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Filter by created date (from) e.g., 2026-06-01' },
+          { name: 'endDate', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Filter by created date (to) e.g., 2026-06-30' }
+        ],
         responses: { 200: { description: 'Quotation(s) details' } },
       },
       put: {

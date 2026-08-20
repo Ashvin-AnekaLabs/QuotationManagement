@@ -71,6 +71,8 @@ class QuotationService {
       limit,
       offset,
       client_id: queryParams.client_id,
+      startDate: queryParams.startDate,
+      endDate: queryParams.endDate,
     });
 
     return {
