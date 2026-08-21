@@ -9,6 +9,7 @@ class CompanyMasterService {
       const existing = await CompanyMaster.findOne({
         where: {
           companyName: companyData.companyName,
+          isActive: true,
         },
       });
 
@@ -30,11 +31,7 @@ class CompanyMasterService {
     if (queryParams.isActive !== undefined) {
       where.isActive = queryParams.isActive === 'true';
     } else {
-      // By default, maybe only fetch active ones unless specified?
-      // Or just fetch all. Let's fetch all active by default if not specified.
-      // Wait, the prompt says GET /api/companies/0 -> Get all active companies.
-      // So if the user hits /api/companies/0 we can set query params from the controller or just handle it here.
-      // We will handle id=0 in controller and call this without pagination maybe.
+      // No default filter - return all companies, frontend handles filtering
     }
 
     if (queryParams.search) {
@@ -86,6 +83,7 @@ class CompanyMasterService {
         where: {
           companyName: companyData.companyName,
           companyId: { [Op.ne]: id },
+          isActive: true,
         },
       });
       if (existing) {
@@ -98,10 +96,8 @@ class CompanyMasterService {
 
   async deleteCompany(id) {
     const company = await this.getCompanyById(id);
-    // Soft delete
-    return await company.update({
-      isActive: false,
-    });
+    await company.destroy();
+    return company;
   }
 }
 

@@ -99,11 +99,8 @@ class TaxMasterService {
 
   async deleteTax(id, userId = null) {
     const tax = await this.getTaxById(id);
-    // Soft delete/deactivate
-    return await tax.update({
-      status: false,
-      updatedBy: userId,
-    });
+    await tax.destroy();
+    return tax;
   }
 }
 

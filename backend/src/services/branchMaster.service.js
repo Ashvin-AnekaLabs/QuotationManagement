@@ -28,6 +28,7 @@ class BranchMasterService {
       where: {
         companyId: branchData.companyId,
         branchName: branchData.branchName,
+        isActive: true,
       },
     });
 
@@ -54,7 +55,7 @@ class BranchMasterService {
 
   async getBranchesByCompanyId(companyId) {
     return await BranchMaster.findAll({
-        where: { companyId, isActive: true },
+        where: { companyId },
         order: [['branchName', 'ASC']]
     });
   }
@@ -88,6 +89,7 @@ class BranchMasterService {
           companyId: checkCompanyId,
           branchName: checkBranchName,
           branchId: { [Op.ne]: id },
+          isActive: true,
         },
       });
       if (existing) {
@@ -106,9 +108,8 @@ class BranchMasterService {
 
   async deleteBranch(id) {
     const branch = await this.getBranchById(id);
-    return await branch.update({
-      isActive: false,
-    });
+    await branch.destroy();
+    return branch;
   }
 }
 

@@ -201,12 +201,10 @@ class DropdownMasterService {
 
     const transaction = await sequelize.transaction();
     try {
-      // Soft deactivation of both master and child options
-      await dropdown.update({ status: false, updatedBy: userId }, { transaction });
-      await DropdownOption.update(
-        { status: false, updatedBy: userId },
-        { where: { dropdownMasterId: id }, transaction }
-      );
+      // Hard delete child options first, then the master record
+      await DropdownOption.destroy({ where: { dropdownMasterId: id }, transaction });
+      await dropdown.destroy({ transaction });
+      
       await transaction.commit();
       return true;
     } catch (err) {
