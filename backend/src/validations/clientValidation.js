@@ -60,6 +60,9 @@ const createClientValidator = [
     .optional({ nullable: true })
     .trim()
     .isLength({ max: 50 }),
+  body('logo')
+    .optional({ nullable: true })
+    .isString(),
   validate,
 ];
 
@@ -123,6 +126,9 @@ const updateClientValidator = [
     .optional({ nullable: true })
     .trim()
     .isLength({ max: 50 }),
+  body('logo')
+    .optional({ nullable: true })
+    .isString(),
   validate,
 ];
 

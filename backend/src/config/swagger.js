@@ -50,6 +50,7 @@ const swaggerDefinition = {
           city: { type: 'string', example: 'Noida' },
           district: { type: 'string', example: 'Noida' },
           status: { type: 'string', example: 'ACTIVE' },
+          logo: { type: 'string', example: 'data:image/png;base64,...' },
         },
       },
       ClientResponse: {
@@ -71,6 +72,7 @@ const swaggerDefinition = {
           city: { type: 'string', example: 'Noida' },
           district: { type: 'string', example: 'Noida' },
           status: { type: 'string', example: 'ACTIVE' },
+          logo: { type: 'string', example: 'data:image/png;base64,...' },
           created_at: { type: 'string', format: 'date-time' },
           updated_at: { type: 'string', format: 'date-time' },
         },

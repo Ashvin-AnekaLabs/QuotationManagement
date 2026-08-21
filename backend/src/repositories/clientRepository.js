@@ -14,16 +14,16 @@ const formatClient = (c) => {
 
 class ClientRepository extends BaseRepository {
   async create(
-    { company_name, contact_person, name, email, phone, address, pan_number, gst_number, website, currency, country, state, city, district, status },
+    { company_name, contact_person, name, email, phone, address, pan_number, gst_number, website, currency, country, state, city, district, status, logo },
     client = null
   ) {
     const actualContactPerson = contact_person || name || '';
     const sql = `
       INSERT INTO "tblClients" (
         company_name, contact_person, name, email, phone, address, 
-        pan_number, gst_number, website, currency, country, state, city, district, status
+        pan_number, gst_number, website, currency, country, state, city, district, status, logo
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING *;
     `;
     const result = await this.query(
@@ -44,6 +44,7 @@ class ClientRepository extends BaseRepository {
         city || null,
         district || null,
         status || 'ACTIVE',
+        logo || null,
       ],
       client
     );
@@ -81,7 +82,7 @@ class ClientRepository extends BaseRepository {
 
   async update(
     id,
-    { company_name, contact_person, name, email, phone, address, pan_number, gst_number, website, currency, country, state, city, district, status },
+    { company_name, contact_person, name, email, phone, address, pan_number, gst_number, website, currency, country, state, city, district, status, logo },
     client = null
   ) {
     const actualContactPerson = contact_person || name;
@@ -102,8 +103,9 @@ class ClientRepository extends BaseRepository {
           city = COALESCE($13, city),
           district = COALESCE($14, district),
           status = COALESCE($15, status),
+          logo = COALESCE($16, logo),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $16
+      WHERE id = $17
       RETURNING *;
     `;
     const result = await this.query(
@@ -124,6 +126,7 @@ class ClientRepository extends BaseRepository {
         city,
         district,
         status,
+        logo,
         id,
       ],
       client
