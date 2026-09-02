@@ -25,6 +25,7 @@ router.use('/milestones', milestoneRoutes);
 router.use('/reports', reportRoutes);
 router.use('/companies', companyRoutes);
 router.use('/branches', branchRoutes);
+router.use('/roles', require('./roleRoutes'));
 
 module.exports = router;
 

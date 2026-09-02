@@ -44,7 +44,33 @@ const authMiddleware = async (req, res, next) => {
       role: user.role_name,
       employee_id: user.employee_id,
       must_change_password: user.must_change_password,
+      privileges: {},
     };
+
+    // Fetch privileges
+    if (user.role_name === 'Admin') {
+      // Admin bypasses all checks programmatically, but we can set a flag or just let permissionMiddleware handle it
+      req.user.isAdmin = true;
+    } else {
+      req.user.isAdmin = false;
+      const privSql = `
+        SELECT m.code, p.can_view, p.can_add, p.can_edit, p.can_delete, p.can_export
+        FROM "tblRolePrivileges" p
+        JOIN "tblModules" m ON p.module_id = m.id
+        JOIN "tblRoles" r ON p.role_id = r.id
+        WHERE r.name = $1;
+      `;
+      const privRes = await pool.query(privSql, [user.role_name]);
+      privRes.rows.forEach(row => {
+        req.user.privileges[row.code] = {
+          can_view: row.can_view,
+          can_add: row.can_add,
+          can_edit: row.can_edit,
+          can_delete: row.can_delete,
+          can_export: row.can_export
+        };
+      });
+    }
 
     next();
   } catch (err) {

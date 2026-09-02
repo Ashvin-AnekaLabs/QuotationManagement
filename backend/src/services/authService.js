@@ -68,13 +68,38 @@ class AuthService {
       [refreshToken, expiresAt, user.id]
     );
 
+    // Fetch Privileges to return to frontend
+    let privileges = {};
+    const isAdmin = user.role_name === 'Admin';
+    if (!isAdmin) {
+      const privSql = `
+        SELECT m.code, p.can_view, p.can_add, p.can_edit, p.can_delete, p.can_export
+        FROM "tblRolePrivileges" p
+        JOIN "tblModules" m ON p.module_id = m.id
+        JOIN "tblRoles" r ON p.role_id = r.id
+        WHERE r.name = $1;
+      `;
+      const privRes = await pool.query(privSql, [user.role_name]);
+      privRes.rows.forEach(row => {
+        privileges[row.code] = {
+          can_view: row.can_view,
+          can_add: row.can_add,
+          can_edit: row.can_edit,
+          can_delete: row.can_delete,
+          can_export: row.can_export
+        };
+      });
+    }
+
     return {
       user: {
         id: user.id,
         email: user.email,
         role: user.role_name,
         employee_id: user.employee_id,
+        isAdmin,
       },
+      privileges,
       accessToken,
       refreshToken,
       mustChangePassword: user.must_change_password,

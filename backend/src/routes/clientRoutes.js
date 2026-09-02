@@ -7,13 +7,19 @@ const {
   idParamValidator,
 } = require('../validations/clientValidation');
 
-router.post('/', createClientValidator, clientController.createClient);
+const authMiddleware = require('../middlewares/authMiddleware');
+const authorizePermission = require('../middlewares/permissionMiddleware');
+
+// Apply auth middleware to all routes in this file
+router.use(authMiddleware);
+
+router.post('/', createClientValidator, authorizePermission('CLIENTS', 'can_add'), clientController.createClient);
 
 // Single GET /clients/:id (0 = get all, >0 = get by ID)
 router
   .route('/:id')
-  .get(idParamValidator, clientController.getClient)
-  .put(updateClientValidator, clientController.updateClient)
-  .delete(idParamValidator, clientController.deleteClient);
+  .get(idParamValidator, authorizePermission('CLIENTS', 'can_view'), clientController.getClient)
+  .put(updateClientValidator, authorizePermission('CLIENTS', 'can_edit'), clientController.updateClient)
+  .delete(idParamValidator, authorizePermission('CLIENTS', 'can_delete'), clientController.deleteClient);
 
 module.exports = router;
