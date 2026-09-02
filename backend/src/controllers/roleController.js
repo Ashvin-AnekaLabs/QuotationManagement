@@ -86,8 +86,45 @@ const updateRolePrivileges = asyncWrapper(async (req, res) => {
   }
 });
 
+// GET /api/v1/roles/:id/users
+const getRoleUsers = asyncWrapper(async (req, res) => {
+  const roleId = req.params.id;
+  const sql = `
+    SELECT 
+      u.id as user_id, 
+      e.id as employee_id, 
+      e.name, 
+      u.created_at, 
+      u.email, 
+      e.phone as mobile_number, 
+      r.name as role_name, 
+      u.is_active
+    FROM "tblUsers" u
+    LEFT JOIN "tblEmployees" e ON u.employee_id = e.id
+    JOIN "tblRoles" r ON u.role_id = r.id
+    WHERE u.role_id = $1
+    ORDER BY u.created_at DESC
+  `;
+  const result = await pool.query(sql, [roleId]);
+  
+  // Format the response to match the UI expectations
+  const users = result.rows.map(row => ({
+    id: row.user_id,
+    employee_id: row.employee_id,
+    name: row.name || 'N/A',
+    created_at: row.created_at,
+    email: row.email,
+    mobile: row.mobile_number || 'N/A',
+    role: row.role_name,
+    status: row.is_active ? 'Active' : 'Inactive'
+  }));
+
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, users, 'Role users fetched successfully'));
+});
+
 module.exports = {
   getRoles,
   getRolePrivileges,
   updateRolePrivileges,
+  getRoleUsers,
 };

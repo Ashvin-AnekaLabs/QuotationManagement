@@ -10,6 +10,7 @@ router.use(authorizeRoles('Admin'));
 
 router.get('/', roleController.getRoles);
 router.get('/:id/privileges', roleController.getRolePrivileges);
+router.get('/:id/users', roleController.getRoleUsers);
 router.put('/:id/privileges', roleController.updateRolePrivileges);
 
 module.exports = router;
