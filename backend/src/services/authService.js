@@ -132,9 +132,8 @@ class AuthService {
     const result = await pool.query('SELECT id, email FROM "tblUsers" WHERE LOWER(email) = LOWER($1);', [email]);
     const user = result.rows[0];
 
-    // Note: Do not throw error or reveal if the email is not registered.
     if (!user) {
-      return { message: 'If the account exists, a password reset link has been sent.' };
+      throw ApiError.notFound('Email address not registered in the system.');
     }
 
     // 2. Generate secure token
@@ -154,7 +153,8 @@ class AuthService {
 
     // 3. Send Email
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+    // Use the ?reset_token= format as per frontend change
+    const resetLink = `${frontendUrl}/?reset_token=${token}`;
 
     const mailText = `You requested a password reset. Please click on the link to reset your password: ${resetLink}. This link is valid for 1 hour.`;
     const mailHtml = `

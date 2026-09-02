@@ -369,6 +369,23 @@ class QuotationService {
   }
 
   /**
+   * Export Quotations List as Downloadable Excel Spreadsheet
+   */
+  async exportQuotations(queryParams, res) {
+    const { generateQuotationsListExcel } = require('../utils/exportHelper');
+    // Fetch all quotations without pagination limit
+    const { quotations } = await quotationRepository.findAll({
+      limit: 10000, // Large enough limit to export all records
+      offset: 0,
+      client_id: queryParams.client_id,
+      startDate: queryParams.startDate,
+      endDate: queryParams.endDate,
+    });
+    
+    return generateQuotationsListExcel(quotations, res);
+  }
+
+  /**
    * Export Single Quotation Summary as Downloadable PDF
    */
   async exportQuotationPdf(id, res) {

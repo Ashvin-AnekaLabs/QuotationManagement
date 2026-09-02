@@ -438,7 +438,83 @@ async function generatePdfReport(reportData, filters = {}, res) {
   doc.end();
 }
 
+/**
+ * Generate Excel list of Quotations
+ * @param {Array} quotations - List of quotation objects
+ * @param {Object} res - Express HTTP response object
+ */
+async function generateQuotationsListExcel(quotations, res) {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'QuoteMaster';
+  workbook.created = new Date();
+
+  const sheet = workbook.addWorksheet('Quotations List');
+
+  // Define Columns
+  sheet.columns = [
+    { header: 'Quotation No.', key: 'quotation_number', width: 22 },
+    { header: 'Client / Project', key: 'client_project', width: 35 },
+    { header: 'Value (INR)', key: 'value', width: 20 },
+    { header: 'Follow Up', key: 'follow_up', width: 18 },
+    { header: 'Last Updated', key: 'last_updated', width: 22 },
+    { header: 'Next Follow Up', key: 'next_follow_up', width: 22 },
+    { header: 'Created On', key: 'created_on', width: 20 },
+    { header: 'Status', key: 'status', width: 20 },
+  ];
+
+  // Header Styling
+  sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
+  sheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: '1A9F9A' }, // Theme teal color
+  };
+
+  // Add Rows
+  quotations.forEach((q) => {
+    // Format Client / Project
+    const clientProject = `${q.client_name || 'N/A'}\n${q.title || 'N/A'}`;
+    
+    // Format Follow Ups
+    const followUps = `${q.follow_up_count || 0} Follow-ups`;
+
+    // Format Dates
+    const lastUpdated = q.last_updated_date ? new Date(q.last_updated_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '-';
+    const nextFollowUp = q.next_follow_up_date ? new Date(q.next_follow_up_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '-';
+    const createdOn = q.created_at ? new Date(q.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '-';
+
+    const row = sheet.addRow({
+      quotation_number: q.quotation_number || `QTN-${q.id}`,
+      client_project: clientProject,
+      value: q.grand_total_formatted || '0.00',
+      follow_up: followUps,
+      last_updated: lastUpdated,
+      next_follow_up: nextFollowUp,
+      created_on: createdOn,
+      status: q.status || 'Draft',
+    });
+
+    // Make row taller to accommodate newline in Client/Project
+    row.height = 30;
+    row.getCell('client_project').alignment = { wrapText: true, vertical: 'middle' };
+    
+    // Vertical alignment for all cells
+    row.eachCell((cell) => {
+      if (cell.col !== 2) { // 2 is client_project
+        cell.alignment = { vertical: 'middle' };
+      }
+    });
+  });
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="Quotations_Export.xlsx"');
+
+  await workbook.xlsx.write(res);
+  res.end();
+}
+
 module.exports = {
   generateExcelReport,
   generatePdfReport,
+  generateQuotationsListExcel,
 };

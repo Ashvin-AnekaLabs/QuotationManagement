@@ -381,3 +381,24 @@ CREATE TABLE IF NOT EXISTS "tblBranchMaster" (
 -- Migrations for tblQuotations to include company and branch
 ALTER TABLE "tblQuotations" ADD COLUMN IF NOT EXISTS "companyId" INTEGER;
 ALTER TABLE "tblQuotations" ADD COLUMN IF NOT EXISTS "branchId" INTEGER;
+
+-- 12. Quotation Follow Ups Table
+CREATE TABLE IF NOT EXISTS "tblQuotationFollowUps" (
+    id SERIAL PRIMARY KEY,
+    quotation_id INTEGER REFERENCES "tblQuotations"(id) ON DELETE CASCADE,
+    follow_up_type VARCHAR(50),
+    contact_person VARCHAR(255),
+    date_time TIMESTAMPTZ,
+    purpose VARCHAR(255),
+    discussion_notes TEXT,
+    discussion_tags JSONB,
+    next_action VARCHAR(255),
+    next_follow_up_date TIMESTAMPTZ,
+    assigned_to INTEGER REFERENCES "tblEmployees"(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Migrations for tblQuotations (Follow up & Status)
+ALTER TABLE "tblQuotations" ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Draft';
+ALTER TABLE "tblQuotations" ADD COLUMN IF NOT EXISTS status_reason TEXT;

@@ -61,6 +61,10 @@ const exportTimelineExcel = asyncWrapper(async (req, res) => {
 
 
 
+const exportQuotations = asyncWrapper(async (req, res) => {
+  await quotationService.exportQuotations(req.query, res);
+});
+
 const getCommercial = asyncWrapper(async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const commercial = await quotationService.getCommercial(id, req.query);
@@ -84,6 +88,7 @@ module.exports = {
   getQuotationSummary,
   exportQuotationPdf,
   exportTimelineExcel,
+  exportQuotations,
   getCommercial,
   updateCommercial,
 };

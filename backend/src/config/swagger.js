@@ -159,8 +159,54 @@ const swaggerDefinition = {
           final_outstanding_amount: { type: 'number', example: 723444.21 },
           grand_total: { type: 'number', example: 723444.21 },
           grand_total_formatted: { type: 'string', example: '₹ 7,23,444.21' },
+          status: { type: 'string', example: 'Under Negotiation' },
+          follow_up_count: { type: 'integer', example: 4 },
+          last_updated_date: { type: 'string', format: 'date-time' },
+          next_follow_up_date: { type: 'string', format: 'date-time' },
           created_at: { type: 'string', format: 'date-time' },
           updated_at: { type: 'string', format: 'date-time' },
+        },
+      },
+      FollowUpInput: {
+        type: 'object',
+        required: ['follow_up_type', 'date_time', 'purpose', 'next_action', 'next_follow_up_date'],
+        properties: {
+          follow_up_type: { type: 'string', example: 'Call' },
+          contact_person: { type: 'string', example: 'Rahul Verma (CTO)' },
+          date_time: { type: 'string', format: 'date-time', example: '2026-08-24T12:00:00Z' },
+          purpose: { type: 'string', example: 'Pricing Discussion' },
+          discussion_notes: { type: 'string', example: 'Discussed pricing with client.' },
+          discussion_tags: { type: 'array', items: { type: 'string' }, example: ['Price Concern'] },
+          next_action: { type: 'string', example: 'Send Revised Quotation' },
+          next_follow_up_date: { type: 'string', format: 'date-time', example: '2026-08-28T11:00:00Z' },
+          assigned_to: { type: 'integer', example: 1 },
+        },
+      },
+      FollowUpResponse: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          quotation_id: { type: 'integer', example: 1 },
+          follow_up_type: { type: 'string', example: 'Call' },
+          contact_person: { type: 'string', example: 'Rahul Verma (CTO)' },
+          date_time: { type: 'string', format: 'date-time' },
+          purpose: { type: 'string', example: 'Pricing Discussion' },
+          discussion_notes: { type: 'string' },
+          discussion_tags: { type: 'array', items: { type: 'string' } },
+          next_action: { type: 'string', example: 'Send Revised Quotation' },
+          next_follow_up_date: { type: 'string', format: 'date-time' },
+          assigned_to: { type: 'integer', example: 1 },
+          assigned_to_name: { type: 'string', example: 'Priya Sharma' },
+          created_at: { type: 'string', format: 'date-time' },
+          updated_at: { type: 'string', format: 'date-time' },
+        },
+      },
+      UpdateQuotationStatusInput: {
+        type: 'object',
+        required: ['status'],
+        properties: {
+          status: { type: 'string', example: 'Closed Won' },
+          status_reason: { type: 'string', example: 'Client approved the final discount.' },
         },
       },
       ScopeInput: {
@@ -969,6 +1015,27 @@ const swaggerDefinition = {
         responses: { 200: { description: 'Employee deleted' } },
       },
     },
+    '/api/v1/quotations/export': {
+      get: {
+        tags: ['Quotations'],
+        summary: 'Export quotations list to Excel',
+        parameters: [
+          { name: 'client_id', in: 'query', schema: { type: 'integer' }, description: 'Filter by client ID' },
+          { name: 'startDate', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Filter by created date (from) e.g., 2026-06-01' },
+          { name: 'endDate', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Filter by created date (to) e.g., 2026-06-30' }
+        ],
+        responses: {
+          200: {
+            description: 'Downloadable Excel Spreadsheet (.xlsx)',
+            content: {
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+                schema: { type: 'string', format: 'binary' }
+              }
+            }
+          }
+        }
+      }
+    },
     '/api/v1/quotations': {
       post: {
         tags: ['Quotations'],
@@ -1533,6 +1600,57 @@ const swaggerDefinition = {
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'companyId', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: { 200: { description: 'Company branches fetched successfully' } },
+      },
+    },
+    '/api/v1/quotations/{id}/follow-ups': {
+      get: {
+        tags: ['Quotations'],
+        summary: 'Get all follow-ups for a quotation',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        responses: {
+          200: {
+            description: 'Success',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } },
+          },
+        },
+      },
+      post: {
+        tags: ['Quotations'],
+        summary: 'Add a new follow-up to a quotation',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/FollowUpInput' } } },
+        },
+        responses: {
+          201: {
+            description: 'Follow-up created',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } },
+          },
+        },
+      },
+    },
+    '/api/v1/quotations/{id}/status': {
+      put: {
+        tags: ['Quotations'],
+        summary: 'Update quotation status and reason',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateQuotationStatusInput' } } },
+        },
+        responses: {
+          200: {
+            description: 'Quotation status updated',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } },
+          },
+        },
       },
     },
   },

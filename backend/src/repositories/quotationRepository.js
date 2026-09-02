@@ -52,6 +52,12 @@ const formatQuotation = (q) => {
     valid_till: q.valid_till ? formatDate(q.valid_till) : null,
     project_start_date: q.project_start_date ? formatDate(q.project_start_date) : null,
     project_end_date: q.project_end_date ? formatDate(q.project_end_date) : null,
+
+    status: q.status || 'Draft',
+    status_reason: q.status_reason || null,
+    follow_up_count: parseInt(q.follow_up_count || 0, 10),
+    last_updated_date: q.last_updated_date || null,
+    next_follow_up_date: q.next_follow_up_date || null,
   };
 };
 
@@ -177,7 +183,10 @@ class QuotationRepository extends BaseRepository {
       SELECT q.*, c.name AS client_name, c.company_name AS client_company, c.email AS client_email,
              e.name AS prepared_by_name,
              comp."companyName", comp.pan AS company_pan, comp.gstin AS company_gstin, comp.email AS company_email, comp.phone AS company_phone, comp.website AS company_website,
-             br."branchName", br."addressLine1" AS branch_address1, br."addressLine2" AS branch_address2, br.city AS branch_city, br.state AS branch_state, br.country AS branch_country, br.pincode AS branch_pincode, br.email AS branch_email, br.phone AS branch_phone
+             br."branchName", br."addressLine1" AS branch_address1, br."addressLine2" AS branch_address2, br.city AS branch_city, br.state AS branch_state, br.country AS branch_country, br.pincode AS branch_pincode, br.email AS branch_email, br.phone AS branch_phone,
+             (SELECT COUNT(*) FROM "tblQuotationFollowUps" f WHERE f.quotation_id = q.id) AS follow_up_count,
+             (SELECT MAX(date_time) FROM "tblQuotationFollowUps" f WHERE f.quotation_id = q.id) AS last_updated_date,
+             (SELECT next_follow_up_date FROM "tblQuotationFollowUps" f WHERE f.quotation_id = q.id ORDER BY date_time DESC LIMIT 1) AS next_follow_up_date
       FROM "tblQuotations" q
       LEFT JOIN "tblClients" c ON q.client_id = c.id
       LEFT JOIN "tblEmployees" e ON q.prepared_by_id = e.id
@@ -242,7 +251,7 @@ class QuotationRepository extends BaseRepository {
       'team_total_project_cost', 'working_days_per_month', 'working_hours_per_day', 'total_working_hours_per_month',
       'total_outstanding_pricing_excl_gst', 'gst_percentage', 'gst_amount', 'discount_type', 'discount_value',
       'discount_amount', 'final_outstanding_amount', 'project_start_date', 'project_end_date', 'working_days',
-      'total_timeline_days', 'important_notes', 'grand_total'
+      'total_timeline_days', 'important_notes', 'grand_total', 'status', 'status_reason'
     ];
 
     let setClauses = [];

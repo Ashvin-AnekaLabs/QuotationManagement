@@ -12,6 +12,9 @@ const scopeRoutes = require('./scopeRoutes');
 const teamRoutes = require('./teamRoutes');
 const milestoneRoutes = require('./milestoneRoutes');
 
+// Export Quotations Route (MUST be before /:id)
+router.get('/export', quotationController.exportQuotations);
+
 // Summary Route
 router.get('/:id/summary', idParamValidator, quotationController.getQuotationSummary);
 
@@ -42,6 +45,11 @@ router
 router.use('/:quotationId/scopes', scopeRoutes);
 router.use('/:quotationId/team', teamRoutes);
 router.use('/:quotationId/milestones', milestoneRoutes);
+
+const followUpRoutes = require('./followUpRoutes');
+
+// Mount follow up routes
+router.use('/:quotationId', followUpRoutes);
 
 module.exports = router;
 
