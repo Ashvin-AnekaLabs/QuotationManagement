@@ -77,7 +77,7 @@ class DashboardRepository extends BaseRepository {
           q.id,
           'Quotation ' || q.quotation_number || ' updated for ' || COALESCE(c.company_name, c.name, 'Client') AS description,
           q.updated_at AS raw_timestamp,
-          TO_CHAR(q.updated_at, 'YYYY-MM-DD') AS timestamp
+          TO_CHAR(q.updated_at, 'YYYY-MM-DD HH12:MI AM') AS timestamp
         FROM "tblQuotations" q
         LEFT JOIN "tblClients" c ON q.client_id = c.id
       )
@@ -88,11 +88,11 @@ class DashboardRepository extends BaseRepository {
           c.id,
           'New client ' || COALESCE(c.company_name, c.name) || ' added' AS description,
           c.created_at AS raw_timestamp,
-          TO_CHAR(c.created_at, 'YYYY-MM-DD') AS timestamp
+          TO_CHAR(c.created_at, 'YYYY-MM-DD HH12:MI AM') AS timestamp
         FROM "tblClients" c
       )
       ORDER BY raw_timestamp DESC
-      LIMIT 10;
+      LIMIT 7;
     `;
     const result = await this.query(sql, [], client);
     return result.rows.map((row) => ({

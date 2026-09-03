@@ -103,10 +103,23 @@ class ReportRepository extends BaseRepository {
   }
 
   /**
-   * Get Revenue Monthly Trends (Padded with 0 for last 6 months)
+   * Get Revenue Monthly Trends (Padded with 0 for last 6 months based on endDate)
    */
   async getRevenueTrends(filters = {}, client = null) {
-    const { whereString, params } = this.buildWhereClause(filters, 'q');
+    const endDateStr = filters.endDate || filters.end_date;
+    const now = endDateStr ? new Date(endDateStr) : new Date();
+
+    // The start date for the 6-month window should be the 1st of the month, 5 months prior.
+    const startOf6Months = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    
+    // Create a modified filters object for the trend query to only fetch the rolling 6 months
+    const trendFilters = { 
+      ...filters, 
+      startDate: startOf6Months.getFullYear() + '-' + String(startOf6Months.getMonth() + 1).padStart(2, '0') + '-01',
+      start_date: undefined
+    };
+
+    const { whereString, params } = this.buildWhereClause(trendFilters, 'q');
 
     const sql = `
       SELECT 
@@ -122,15 +135,14 @@ class ReportRepository extends BaseRepository {
 
     const result = await this.query(sql, params, client);
     
-    // Generate the last 6 months
+    // Generate the last 6 months skeleton ending at `now`
     const last6Months = [];
-    const now = new Date();
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const year = d.getFullYear();
       const monthStr = String(d.getMonth() + 1).padStart(2, '0');
       const monthKey = `${year}-${monthStr}`;
-      const monthLabel = d.toLocaleString('default', { month: 'short' }) + ' ' + year;
+      const monthLabel = d.toLocaleString('en-US', { month: 'short' }) + ' ' + year;
       
       last6Months.push({
         month_key: monthKey,
