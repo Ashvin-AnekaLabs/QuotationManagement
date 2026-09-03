@@ -12,8 +12,14 @@ const scopeRoutes = require('./scopeRoutes');
 const teamRoutes = require('./teamRoutes');
 const milestoneRoutes = require('./milestoneRoutes');
 
+const authMiddleware = require('../middlewares/authMiddleware');
+const authorizePermission = require('../middlewares/permissionMiddleware');
+
+// Apply auth middleware to all routes in this file
+router.use(authMiddleware);
+
 // Export Quotations Route (MUST be before /:id)
-router.get('/export', quotationController.exportQuotations);
+router.get('/export', authorizePermission('QUOTATIONS', 'can_export'), quotationController.exportQuotations);
 
 // Summary Route
 router.get('/:id/summary', idParamValidator, quotationController.getQuotationSummary);
@@ -22,24 +28,24 @@ router.get('/:id/summary', idParamValidator, quotationController.getQuotationSum
 
 // Commercial Details Routes (Step 6)
 router.route('/:id/commercial')
-  .get(idParamValidator, quotationController.getCommercial)
-  .put(idParamValidator, quotationController.updateCommercial);
+  .get(idParamValidator, authorizePermission('QUOTATIONS', 'can_view'), quotationController.getCommercial)
+  .put(idParamValidator, authorizePermission('QUOTATIONS', 'can_edit'), quotationController.updateCommercial);
 
 // Quotation PDF Download Routes
-router.get('/:id/download', idParamValidator, quotationController.exportQuotationPdf);
-router.get('/:id/pdf', idParamValidator, quotationController.exportQuotationPdf);
+router.get('/:id/download', idParamValidator, authorizePermission('QUOTATIONS', 'can_export'), quotationController.exportQuotationPdf);
+router.get('/:id/pdf', idParamValidator, authorizePermission('QUOTATIONS', 'can_export'), quotationController.exportQuotationPdf);
 
 // Quotation Timeline Excel Download Route (Single API)
-router.get('/:id/timeline/excel', idParamValidator, quotationController.exportTimelineExcel);
+router.get('/:id/timeline/excel', idParamValidator, authorizePermission('QUOTATIONS', 'can_export'), quotationController.exportTimelineExcel);
 
-router.post('/', createQuotationValidator, quotationController.createQuotation);
+router.post('/', createQuotationValidator, authorizePermission('QUOTATIONS', 'can_add'), quotationController.createQuotation);
 
 // Single GET /quotations/:id (0 = get all, >0 = get by ID)
 router
   .route('/:id')
-  .get(idParamValidator, quotationController.getQuotation)
-  .put(updateQuotationValidator, quotationController.updateQuotation)
-  .delete(idParamValidator, quotationController.deleteQuotation);
+  .get(idParamValidator, authorizePermission('QUOTATIONS', 'can_view'), quotationController.getQuotation)
+  .put(updateQuotationValidator, authorizePermission('QUOTATIONS', 'can_edit'), quotationController.updateQuotation)
+  .delete(idParamValidator, authorizePermission('QUOTATIONS', 'can_delete'), quotationController.deleteQuotation);
 
 // Nested resource mounting
 router.use('/:quotationId/scopes', scopeRoutes);

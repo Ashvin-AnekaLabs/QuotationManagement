@@ -318,8 +318,31 @@ CREATE TABLE IF NOT EXISTS "tblRoles" (
 
 -- Seed Roles
 INSERT INTO "tblRoles" (name) 
-VALUES ('Admin'), ('Employee')
+VALUES ('Admin'), ('Manager'), ('Sales Person')
 ON CONFLICT (name) DO NOTHING;
+
+-- 8a. Modules Master Table
+CREATE TABLE IF NOT EXISTS "tblModules" (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    status BOOLEAN DEFAULT TRUE
+);
+
+-- 8b. Role Privileges Table
+CREATE TABLE IF NOT EXISTS "tblRolePrivileges" (
+    id SERIAL PRIMARY KEY,
+    role_id INTEGER REFERENCES "tblRoles"(id) ON DELETE CASCADE,
+    module_id INTEGER REFERENCES "tblModules"(id) ON DELETE CASCADE,
+    can_view BOOLEAN DEFAULT FALSE,
+    can_add BOOLEAN DEFAULT FALSE,
+    can_edit BOOLEAN DEFAULT FALSE,
+    can_delete BOOLEAN DEFAULT FALSE,
+    can_export BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_role_module UNIQUE(role_id, module_id)
+);
 
 -- 9. Users Table
 CREATE TABLE IF NOT EXISTS "tblUsers" (

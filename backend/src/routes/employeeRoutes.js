@@ -7,16 +7,22 @@ const {
   idParamValidator,
 } = require('../validations/employeeValidation');
 
-router.post('/', createEmployeeValidator, employeeController.createEmployee);
+const authMiddleware = require('../middlewares/authMiddleware');
+const authorizePermission = require('../middlewares/permissionMiddleware');
+
+// Apply auth middleware to all routes in this file
+router.use(authMiddleware);
+
+router.post('/', createEmployeeValidator, authorizePermission('EMPLOYEES', 'can_add'), employeeController.createEmployee);
 
 // Get all unique roles
-router.get('/roles', employeeController.getRoles);
+router.get('/roles', authorizePermission('EMPLOYEES', 'can_view'), employeeController.getRoles);
 
 // Single GET /employees/:id (0 = get all, >0 = get by ID)
 router
   .route('/:id')
-  .get(idParamValidator, employeeController.getEmployee)
-  .put(updateEmployeeValidator, employeeController.updateEmployee)
-  .delete(idParamValidator, employeeController.deleteEmployee);
+  .get(idParamValidator, authorizePermission('EMPLOYEES', 'can_view'), employeeController.getEmployee)
+  .put(updateEmployeeValidator, authorizePermission('EMPLOYEES', 'can_edit'), employeeController.updateEmployee)
+  .delete(idParamValidator, authorizePermission('EMPLOYEES', 'can_delete'), employeeController.deleteEmployee);
 
 module.exports = router;

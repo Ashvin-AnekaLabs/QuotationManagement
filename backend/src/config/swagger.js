@@ -756,6 +756,60 @@ const swaggerDefinition = {
           updatedAt: { type: 'string', format: 'date-time' },
         },
       },
+      RoleResponse: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          name: { type: 'string', example: 'Admin' },
+          user_count: { type: 'integer', example: 5 },
+        },
+      },
+      RolePrivilegeResponse: {
+        type: 'object',
+        properties: {
+          module_id: { type: 'integer', example: 1 },
+          code: { type: 'string', example: 'DASHBOARD' },
+          module_name: { type: 'string', example: 'Dashboard' },
+          can_view: { type: 'boolean', example: true },
+          can_add: { type: 'boolean', example: false },
+          can_edit: { type: 'boolean', example: false },
+          can_delete: { type: 'boolean', example: false },
+          can_export: { type: 'boolean', example: false },
+        },
+      },
+      UpdateRolePrivilegesInput: {
+        type: 'object',
+        properties: {
+          privileges: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['module_id', 'can_view', 'can_add', 'can_edit', 'can_delete', 'can_export'],
+              properties: {
+                module_id: { type: 'integer', example: 1 },
+                can_view: { type: 'boolean', example: true },
+                can_add: { type: 'boolean', example: false },
+                can_edit: { type: 'boolean', example: false },
+                can_delete: { type: 'boolean', example: false },
+                can_export: { type: 'boolean', example: false },
+              },
+            },
+          },
+        },
+      },
+      RoleUserResponse: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          employee_id: { type: 'integer', example: 1 },
+          name: { type: 'string', example: 'Admin User' },
+          created_at: { type: 'string', format: 'date-time' },
+          email: { type: 'string', example: 'admin@example.com' },
+          mobile: { type: 'string', example: '9876543210' },
+          role: { type: 'string', example: 'Admin' },
+          status: { type: 'string', example: 'Active' },
+        },
+      },
     },
   },
   paths: {
@@ -1648,6 +1702,65 @@ const swaggerDefinition = {
         responses: {
           200: {
             description: 'Quotation status updated',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } },
+          },
+        },
+      },
+    },
+    '/api/v1/roles': {
+      get: {
+        tags: ['Roles'],
+        summary: 'Get all roles along with user count',
+        responses: {
+          200: {
+            description: 'Roles fetched successfully',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } },
+          },
+        },
+      },
+    },
+    '/api/v1/roles/{id}/privileges': {
+      get: {
+        tags: ['Roles'],
+        summary: 'Get privileges for a specific role',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        responses: {
+          200: {
+            description: 'Role privileges fetched successfully',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } },
+          },
+        },
+      },
+      put: {
+        tags: ['Roles'],
+        summary: 'Update privileges for a specific role',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateRolePrivilegesInput' } } },
+        },
+        responses: {
+          200: {
+            description: 'Role privileges updated successfully',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } },
+          },
+        },
+      },
+    },
+    '/api/v1/roles/{id}/users': {
+      get: {
+        tags: ['Roles'],
+        summary: 'Get users belonging to a specific role',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        responses: {
+          200: {
+            description: 'Role users fetched successfully',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } },
           },
         },
