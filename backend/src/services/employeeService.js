@@ -1,6 +1,4 @@
-const crypto = require('crypto');
-const bcrypt = require('bcrypt');
-const { sendEmail } = require('../utils/emailHelper');
+// Unused imports removed
 const employeeRepository = require('../repositories/employeeRepository');
 const ApiError = require('../utils/ApiError');
 
@@ -11,64 +9,9 @@ class EmployeeService {
       throw ApiError.conflict(`Employee with email '${employeeData.email}' already exists`);
     }
 
-    const dbClient = await employeeRepository.getTransactionClient();
-    try {
-      await dbClient.query('BEGIN');
-
-      // 1. Create the employee record
-      const employee = await employeeRepository.create(employeeData, dbClient);
-
-      // 2. Generate secure random 12-char temporary password
-      const tempPassword = crypto.randomBytes(6).toString('hex');
-
-      // 3. Hash temporary password
-      const passwordHash = await bcrypt.hash(tempPassword, 10);
-
-      // 4. Fetch the 'Employee' role ID
-      const roleRes = await dbClient.query('SELECT id FROM "tblRoles" WHERE name = $1;', ['Employee']);
-      if (roleRes.rows.length === 0) {
-        throw ApiError.internal('Employee role does not exist in Role Master');
-      }
-      const employeeRoleId = roleRes.rows[0].id;
-
-      // 5. Create user master record in "tblUsers"
-      await dbClient.query(
-        `INSERT INTO "tblUsers" (employee_id, role_id, email, password_hash, is_active, must_change_password)
-         VALUES ($1, $2, $3, $4, TRUE, TRUE);`,
-        [employee.id, employeeRoleId, employee.email, passwordHash]
-      );
-
-      await dbClient.query('COMMIT');
-
-      // 6. Send welcome email asynchronously
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-      const loginUrl = `${frontendUrl}/login`;
-      const mailText = `Welcome to QuoteMaster!\n\nYour account has been created.\nUsername: ${employee.email}\nTemporary Password: ${tempPassword}\n\nPlease login at ${loginUrl} and change your password immediately.`;
-      const mailHtml = `
-        <h3>Welcome to QuoteMaster!</h3>
-        <p>An account has been created for you as an Employee.</p>
-        <p><strong>Username / Email:</strong> ${employee.email}</p>
-        <p><strong>Temporary Password:</strong> <code>${tempPassword}</code></p>
-        <p>Please login to the application using the link below and change your password immediately for security:</p>
-        <div style="margin: 20px 0;">
-          <a href="${loginUrl}" style="background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Log In to Application</a>
-        </div>
-      `;
-
-      sendEmail({
-        to: employee.email,
-        subject: 'Welcome to QuoteMaster - Your Login Credentials',
-        text: mailText,
-        html: mailHtml,
-      });
-
-      return employee;
-    } catch (err) {
-      await dbClient.query('ROLLBACK');
-      throw err;
-    } finally {
-      dbClient.release();
-    }
+    // Directly create the Project Team resource (no longer creates system users or sends emails)
+    const employee = await employeeRepository.create(employeeData);
+    return employee;
   }
 
   async getAllEmployees(queryParams) {

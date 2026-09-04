@@ -95,12 +95,23 @@ class QuotationService {
   }
 
   async updateQuotation(id, updateData) {
-    await this.getQuotationById(id);
+    const existing = await this.getQuotationById(id);
 
     if (updateData.client_id) {
       const clientObj = await clientRepository.findById(updateData.client_id);
       if (!clientObj) {
         throw ApiError.notFound(`Client with ID ${updateData.client_id} does not exist`);
+      }
+    }
+
+    // Protect status from being overwritten by wizard step/general updates.
+    // Status should only be changed via the dedicated updateQuotationStatus endpoint.
+    // If the existing quotation has a non-Draft status and the update tries to set
+    // it back to 'Draft' (e.g. from frontend default), strip it out to prevent overwrite.
+    if (updateData.status !== undefined) {
+      const progressedStatuses = ['Sent', 'Under Negotiation', 'Closed Won', 'Closed Lost', 'On Hold'];
+      if (progressedStatuses.includes(existing.status) && updateData.status === 'Draft') {
+        delete updateData.status;
       }
     }
 

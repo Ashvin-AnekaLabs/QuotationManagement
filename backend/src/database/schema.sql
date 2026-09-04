@@ -362,11 +362,16 @@ CREATE TABLE IF NOT EXISTS "tblUsers" (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- Migrations for tblUsers (token consolidation)
+-- Migrations for tblUsers (token consolidation & system user details)
 ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS refresh_token TEXT;
 ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS refresh_token_expires_at TIMESTAMPTZ;
 ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
 ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS reset_token_expires_at TIMESTAMPTZ;
+ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS name VARCHAR(255);
+ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
+ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS reporting_manager_id INTEGER REFERENCES "tblUsers"(id) ON DELETE SET NULL;
+ALTER TABLE "tblUsers" ALTER COLUMN employee_id DROP NOT NULL;
+ALTER TABLE "tblUsers" ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;
 
 -- 10. Company Master Table
 CREATE TABLE IF NOT EXISTS "tblCompanyMaster" (

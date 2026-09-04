@@ -810,6 +810,43 @@ const swaggerDefinition = {
           status: { type: 'string', example: 'Active' },
         },
       },
+      SystemUserResponse: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          name: { type: 'string', example: 'John Doe' },
+          phone: { type: 'string', example: '9876543210' },
+          email: { type: 'string', example: 'john@example.com' },
+          role: { type: 'string', example: 'Manager' },
+          role_id: { type: 'integer', example: 2 },
+          is_active: { type: 'boolean', example: true },
+          reporting_manager_id: { type: 'integer', example: 1 },
+          reporting_manager_name: { type: 'string', example: 'Admin User' },
+          created_at: { type: 'string', format: 'date-time' }
+        }
+      },
+      SystemUserCreateInput: {
+        type: 'object',
+        required: ['name', 'email', 'role_id'],
+        properties: {
+          name: { type: 'string', example: 'John Doe' },
+          email: { type: 'string', example: 'john@example.com' },
+          phone: { type: 'string', example: '9876543210' },
+          role_id: { type: 'integer', example: 2 },
+          reporting_manager_id: { type: 'integer', example: 1 }
+        }
+      },
+      SystemUserUpdateInput: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', example: 'John Doe' },
+          email: { type: 'string', example: 'john@example.com' },
+          phone: { type: 'string', example: '9876543210' },
+          role_id: { type: 'integer', example: 2 },
+          reporting_manager_id: { type: 'integer', example: 1 },
+          is_active: { type: 'boolean', example: true }
+        }
+      }
     },
   },
   paths: {
@@ -1711,6 +1748,7 @@ const swaggerDefinition = {
       get: {
         tags: ['Roles'],
         summary: 'Get all roles along with user count',
+        security: [{ bearerAuth: [] }],
         responses: {
           200: {
             description: 'Roles fetched successfully',
@@ -1723,6 +1761,7 @@ const swaggerDefinition = {
       get: {
         tags: ['Roles'],
         summary: 'Get privileges for a specific role',
+        security: [{ bearerAuth: [] }],
         parameters: [
           { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
         ],
@@ -1736,6 +1775,7 @@ const swaggerDefinition = {
       put: {
         tags: ['Roles'],
         summary: 'Update privileges for a specific role',
+        security: [{ bearerAuth: [] }],
         parameters: [
           { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
         ],
@@ -1755,6 +1795,7 @@ const swaggerDefinition = {
       get: {
         tags: ['Roles'],
         summary: 'Get users belonging to a specific role',
+        security: [{ bearerAuth: [] }],
         parameters: [
           { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
         ],
@@ -1766,7 +1807,164 @@ const swaggerDefinition = {
         },
       },
     },
-  },
+    '/api/v1/users/managers': {
+      get: {
+        tags: ['System Users'],
+        summary: 'Get dropdown list of active Managers',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'List fetched successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    statusCode: { type: 'integer', example: 200 },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'integer', example: 1 },
+                          name: { type: 'string', example: 'Jane Smith' },
+                          email: { type: 'string', example: 'jane@example.com' }
+                        }
+                      }
+                    },
+                    message: { type: 'string', example: 'Managers list fetched successfully' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/users': {
+      get: {
+        tags: ['System Users'],
+        summary: 'Get all system users (scoped by RBAC)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 50 } }
+        ],
+        responses: {
+          200: {
+            description: 'Users fetched successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    statusCode: { type: 'integer', example: 200 },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        users: {
+                          type: 'array',
+                          items: { $ref: '#/components/schemas/SystemUserResponse' }
+                        },
+                        pagination: {
+                          type: 'object',
+                          properties: {
+                            total: { type: 'integer', example: 1 },
+                            page: { type: 'integer', example: 1 },
+                            limit: { type: 'integer', example: 50 },
+                            totalPages: { type: 'integer', example: 1 }
+                          }
+                        }
+                      }
+                    },
+                    message: { type: 'string', example: 'Users fetched successfully' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        tags: ['System Users'],
+        summary: 'Create a new system user',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SystemUserCreateInput' }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'User created successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    statusCode: { type: 'integer', example: 201 },
+                    data: { $ref: '#/components/schemas/SystemUserResponse' },
+                    message: { type: 'string', example: 'User created successfully and credentials sent via email' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/users/{id}': {
+      put: {
+        tags: ['System Users'],
+        summary: 'Update a system user',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SystemUserUpdateInput' }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'User updated successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    statusCode: { type: 'integer', example: 200 },
+                    data: { $ref: '#/components/schemas/SystemUserResponse' },
+                    message: { type: 'string', example: 'User updated successfully' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      delete: {
+        tags: ['System Users'],
+        summary: 'Soft delete / deactivate a system user',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          200: {
+            description: 'User deactivated successfully'
+          }
+        }
+      }
+    }
+  }
 };
 
 

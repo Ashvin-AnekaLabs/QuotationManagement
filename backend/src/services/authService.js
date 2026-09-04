@@ -28,10 +28,14 @@ class AuthService {
   async login(email, password) {
     // Fetch user and join role
     const sql = `
-      SELECT u.*, r.name AS role_name
+      SELECT 
+        u.*, r.name AS role_name,
+        COALESCE(u.name, e.name) AS user_name,
+        COALESCE(u.phone, e.phone) AS user_phone
       FROM "tblUsers" u
       JOIN "tblRoles" r ON u.role_id = r.id
-      WHERE LOWER(u.email) = LOWER($1);
+      LEFT JOIN "tblEmployees" e ON u.employee_id = e.id
+      WHERE LOWER(u.email) = LOWER($1) AND u.deleted_at IS NULL;
     `;
     const result = await pool.query(sql, [email]);
     const user = result.rows[0];
@@ -94,6 +98,8 @@ class AuthService {
     return {
       user: {
         id: user.id,
+        name: user.user_name || '',
+        phone: user.user_phone || '',
         email: user.email,
         role: user.role_name,
         employee_id: user.employee_id,

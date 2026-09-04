@@ -10,11 +10,13 @@ const functionalityRoutes = require('./functionalityRoutes');
 const milestoneRoutes = require('./milestoneRoutes');
 const reportRoutes = require('./reportRoutes');
 const authRoutes = require('./authRoutes');
+const userRoutes = require('./userRoutes');
 const companyRoutes = require('./companyRoutes');
 const branchRoutes = require('./branchRoutes');
 
 // Mount Resource Routers
 router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/clients', clientRoutes);
 router.use('/employees', employeeRoutes);

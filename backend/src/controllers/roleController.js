@@ -93,16 +93,16 @@ const getRoleUsers = asyncWrapper(async (req, res) => {
     SELECT 
       u.id as user_id, 
       e.id as employee_id, 
-      e.name, 
+      COALESCE(u.name, e.name) as name, 
       u.created_at, 
       u.email, 
-      e.phone as mobile_number, 
+      COALESCE(u.phone, e.phone) as mobile_number, 
       r.name as role_name, 
       u.is_active
     FROM "tblUsers" u
     LEFT JOIN "tblEmployees" e ON u.employee_id = e.id
     JOIN "tblRoles" r ON u.role_id = r.id
-    WHERE u.role_id = $1
+    WHERE u.role_id = $1 AND u.deleted_at IS NULL
     ORDER BY u.created_at DESC
   `;
   const result = await pool.query(sql, [roleId]);
